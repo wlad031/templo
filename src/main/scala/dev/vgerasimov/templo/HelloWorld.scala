@@ -1,4 +1,4 @@
-package dev.vgerasimov.template
+package dev.vgerasimov.templo
 
 object Hello:
   def apply(s: String): String = s"Hello $s!"

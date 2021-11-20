@@ -1,4 +1,4 @@
-package dev.vgerasimov.template
+package dev.vgerasimov.templo
 
 import org.scalacheck.Prop.*
 

@@ -3,10 +3,10 @@ val root = project
   .settings(
     scalaVersion := "3.1.0",
     organization := "dev.vgerasimov",
-    name := "template-scala-sbt",
+    name := "templo",
     version := "0.1.0",
     githubOwner := "wlad031",
-    githubRepository := "template-scala-sbt",
+    githubRepository := "templo",
     scalacOptions ++= Seq(
       "-rewrite",
       "-source", "future"
