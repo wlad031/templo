@@ -1,0 +1,26 @@
+{
+  "name": "templo (Scala 3 + sbt)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=/home/admin/.env,target=/home/vscode/.env,type=bind,consistency=cached,readonly"
+  ],
+  "postCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
+  "postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/load-env.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "scala-lang.scala",
+        "scalameta.metals",
+        "EditorConfig.EditorConfig"
+      ],
+      "settings": {
+        "metals.sbtScript": "sbt",
+        "files.eol": "\n"
+      }
+    }
+  }
+}
