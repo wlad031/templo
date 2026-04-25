@@ -2,8 +2,11 @@ package dev.vgerasimov.templo
 
 import dev.vgerasimov.templo.types.*
 import dev.vgerasimov.templo.syntax.*
+import dev.vgerasimov.slowparse.{P, POut, anyChar}
+import dev.vgerasimov.slowparse.Parsers.given
+import dev.vgerasimov.slowparse.Parsers.*
 
-/** Parses given string into [[???]] or [[Parser.Error]] cannot be correctly parsed. */
+/** Parses template into text/code blocks or [[Parser.Error]]. */
 trait Parser extends (String => Either[Parser.Error, List[Block]])
 
 /** Contains parser-related types and functions. */
@@ -16,114 +19,36 @@ object Parser:
 
 /** [[Parser]] implementation using [[https://github.com/wlad031/slowparse Slowparse]] library. */
 object SlowparseParser extends Parser:
+
+  private val escapedStringChar: P[String] = (P("\\") ~ anyChar).!
+  private val plainStringChar: P[String] = (!P("\"") ~ anyChar).!
+  private val quotedString: P[String] = (P("\"") ~ (escapedStringChar | plainStringChar).rep ~ P("\"")).!
+
+  private val codeChunk: P[String] = quotedString | (!P("}}") ~ anyChar).!
+  private val codeBlock: P[Block] = (P("{{") ~~ codeChunk.rep.map(_.mkString) ~~ P("}}")).map(Block.Code.apply)
+  private val textCharBlock: P[Block] = (!P("{{") ~ anyChar).!.map(Block.Text.apply)
+  private val blocks: P[List[Block]] = (codeBlock | textCharBlock).rep
+
   override def apply(string: String): Either[Parser.Error, List[Block]] =
-    parseBlocks(string)
+    blocks(string) match
+      case POut.Success(parsed, _, remaining, _) if remaining.isEmpty =>
+        mergeTextBlocks(parsed).asRight
+      case POut.Success(_, _, remaining, _) if remaining.startsWith("{{") =>
+        Parser.Error("Unclosed template expression").asLeft
+      case POut.Success(_, _, remaining, _) =>
+        Parser.Error(s"Could not parse template near: ${preview(remaining)}").asLeft
+      case POut.Failure(message, _) =>
+        Parser.Error(message).asLeft
 
-  private def parseBlocks(input: String): Either[Parser.Error, List[Block]] =
-    val blocks = scala.collection.mutable.ListBuffer.empty[Block]
-    val text = new StringBuilder
+  private def mergeTextBlocks(parsed: List[Block]): List[Block] =
+    parsed
+      .foldLeft(List.empty[Block]) { (acc, block) =>
+        (acc, block) match
+          case (Block.Text(prev) :: tail, Block.Text(current)) => Block.Text(s"$prev$current") :: tail
+          case _                                                => block :: acc
+      }
+      .reverse
 
-    def flushText(): Unit =
-      if text.nonEmpty then
-        blocks += Block.Text(text.toString)
-        text.clear()
-
-    var i = 0
-    while i < input.length do
-      if input.charAt(i) == '{' then
-        flushText()
-        if i + 1 < input.length && input.charAt(i + 1) == '{' then
-          parseEnvelope(input, i + 2) match
-            case Left(error) => return error.asLeft
-            case Right((content, next)) =>
-              blocks += Block.Envelope(content)
-              i = next
-        else
-          parseCode(input, i + 1) match
-            case Left(error) => return error.asLeft
-            case Right((content, next)) =>
-              blocks += Block.Code(content)
-              i = next
-      else
-        text.append(input.charAt(i))
-        i += 1
-
-    flushText()
-    blocks.toList.asRight
-
-  private def parseCode(input: String, from: Int): Either[Parser.Error, (String, Int)] =
-    val out = new StringBuilder
-    var i = from
-    var depth = 1
-    var inQuotes = false
-    var escaped = false
-
-    while i < input.length do
-      val ch = input.charAt(i)
-      if inQuotes then
-        out.append(ch)
-        if escaped then escaped = false
-        else if ch == '\\' then escaped = true
-        else if ch == '"' then inQuotes = false
-        i += 1
-      else
-        ch match
-          case '"' =>
-            out.append(ch)
-            inQuotes = true
-            i += 1
-          case '{' =>
-            out.append(ch)
-            depth += 1
-            i += 1
-          case '}' =>
-            depth -= 1
-            if depth == 0 then return (out.toString, i + 1).asRight
-            out.append(ch)
-            i += 1
-          case _ =>
-            out.append(ch)
-            i += 1
-
-    Parser.Error("Unclosed code block").asLeft
-
-  private def parseEnvelope(input: String, from: Int): Either[Parser.Error, (String, Int)] =
-    val out = new StringBuilder
-    var i = from
-    var depth = 0
-    var inQuotes = false
-    var escaped = false
-
-    while i < input.length do
-      val ch = input.charAt(i)
-      if inQuotes then
-        out.append(ch)
-        if escaped then escaped = false
-        else if ch == '\\' then escaped = true
-        else if ch == '"' then inQuotes = false
-        i += 1
-      else
-        ch match
-          case '"' =>
-            out.append(ch)
-            inQuotes = true
-            i += 1
-          case '{' =>
-            out.append(ch)
-            depth += 1
-            i += 1
-          case '}' =>
-            if depth > 0 then
-              out.append(ch)
-              depth -= 1
-              i += 1
-            else if i + 1 < input.length && input.charAt(i + 1) == '}' then
-              return (out.toString, i + 2).asRight
-            else
-              out.append(ch)
-              i += 1
-          case _ =>
-            out.append(ch)
-            i += 1
-
-    Parser.Error("Unclosed template envelope").asLeft
+  private def preview(value: String): String =
+    val size = 30
+    if value.length <= size then value else s"${value.take(size)}..."
