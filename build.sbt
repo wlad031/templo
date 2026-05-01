@@ -4,7 +4,7 @@ val root = project
     scalaVersion := "3.8.3",
     organization := "dev.vgerasimov",
     name := "templo",
-    version := "0.1.0",
+    version := "0.1.1",
     githubOwner := "wlad031",
     githubRepository := "templo",
     scalacOptions ++= Seq(
@@ -17,7 +17,7 @@ val root = project
         "org.scalameta"  %% "munit"            % munitVersion % Test,
         "org.scalameta"  %% "munit-scalacheck" % munitVersion % Test,
         "dev.vgerasimov" %% "slowparse"        % "0.2.1",
-        "dev.vgerasimov" %% "lizp"             % "0.1.2",
+        "dev.vgerasimov" %% "lizp"             % "0.1.4",
       )
     },
   )

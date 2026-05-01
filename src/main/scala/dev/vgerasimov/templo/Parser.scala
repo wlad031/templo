@@ -24,7 +24,7 @@ object SlowparseParser extends Parser:
   private val quotedString: P[String] = (P("\"") ~ (escapedStringChar | plainStringChar).rep() ~ P("\"")).!
 
   private val codeChunk: P[String] = quotedString | (!P("}}") ~ anyChar).!
-  private val codeBlock: P[Block] = (P("{{") ~~ codeChunk.rep().map(_.mkString) ~~ P("}}")).map(Block.Code.apply)
+  private val codeBlock: P[Block] = (P("{{") ~ codeChunk.rep().map(_.mkString) ~ P("}}")).map(Block.Code.apply)
   private val textCharBlock: P[Block] = (!P("{{") ~ anyChar).!.map(Block.Text.apply)
   private val blocks: P[List[Block]] = (codeBlock | textCharBlock).rep()
 
