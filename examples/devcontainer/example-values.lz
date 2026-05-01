@@ -1,0 +1,15 @@
+(define project_name "templo")
+(define scala_version "3")
+
+(define dockerfile_path "Dockerfile")
+(define build_context "..")
+(define devcontainer_dir ".devcontainer")
+
+(define username "vscode")
+(define env_file_source "/home/admin/.env.devcontainer")
+(define env_file_name ".env")
+(define exports_file_name ".devcontainer-env")
+
+(define java_variant "1-17-bullseye")
+(define tea_version "0.14.0")
+(define gitea_url "https://gitea.local.vgerasimov.dev")

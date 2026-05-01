@@ -2,9 +2,8 @@ package dev.vgerasimov.templo
 
 import dev.vgerasimov.templo.types.*
 import dev.vgerasimov.templo.syntax.*
-import dev.vgerasimov.slowparse.{P, POut, anyChar}
-import dev.vgerasimov.slowparse.Parsers.given
-import dev.vgerasimov.slowparse.Parsers.*
+import dev.vgerasimov.slowparse.*
+import dev.vgerasimov.slowparse.Parsers.{ *, given }
 
 /** Parses template into text/code blocks or [[Parser.Error]]. */
 trait Parser extends (String => Either[Parser.Error, List[Block]])
@@ -22,12 +21,12 @@ object SlowparseParser extends Parser:
 
   private val escapedStringChar: P[String] = (P("\\") ~ anyChar).!
   private val plainStringChar: P[String] = (!P("\"") ~ anyChar).!
-  private val quotedString: P[String] = (P("\"") ~ (escapedStringChar | plainStringChar).rep ~ P("\"")).!
+  private val quotedString: P[String] = (P("\"") ~ (escapedStringChar | plainStringChar).rep() ~ P("\"")).!
 
   private val codeChunk: P[String] = quotedString | (!P("}}") ~ anyChar).!
-  private val codeBlock: P[Block] = (P("{{") ~~ codeChunk.rep.map(_.mkString) ~~ P("}}")).map(Block.Code.apply)
+  private val codeBlock: P[Block] = (P("{{") ~~ codeChunk.rep().map(_.mkString) ~~ P("}}")).map(Block.Code.apply)
   private val textCharBlock: P[Block] = (!P("{{") ~ anyChar).!.map(Block.Text.apply)
-  private val blocks: P[List[Block]] = (codeBlock | textCharBlock).rep
+  private val blocks: P[List[Block]] = (codeBlock | textCharBlock).rep()
 
   override def apply(string: String): Either[Parser.Error, List[Block]] =
     blocks(string) match

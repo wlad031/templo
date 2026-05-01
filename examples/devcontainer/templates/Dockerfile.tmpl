@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/devcontainers/java:1-17-bullseye
+FROM mcr.microsoft.com/devcontainers/java:{{java_variant}}
 
-ARG USERNAME=vscode
-ARG TEA_VERSION=0.14.0
+ARG USERNAME={{username}}
+ARG TEA_VERSION={{tea_version}}
 
 RUN rm -f /etc/apt/sources.list.d/yarn.list \
     && apt-get update \

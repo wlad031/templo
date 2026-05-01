@@ -6,10 +6,13 @@
   },
   "remoteUser": "vscode",
   "mounts": [
-    "source=/home/admin/.env,target=/home/vscode/.env,type=bind,consistency=cached,readonly"
+    "source=/home/admin/.env.devcontainer,target=/home/vscode/.env,type=bind,consistency=cached,readonly"
   ],
   "postCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
   "postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/load-env.sh",
+  "runArgs": [
+    "--name=devc-${localWorkspaceFolderBasename}-${devcontainerId}"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [

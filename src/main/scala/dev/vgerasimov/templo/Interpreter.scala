@@ -77,4 +77,9 @@ object LizpInterpreter extends Interpreter:
     case LizpCons(_, tail)       => lastListValue(tail)
 
   private def escape(value: String): String =
-    value.replace("\\", "\\\\").replace("\"", "\\\"")
+    value
+      .replace("\\", "\\\\")
+      .replace("\"", "\\\"")
+      .replace("\r", "\\r")
+      .replace("\n", "\\n")
+      .replace("\t", "\\t")

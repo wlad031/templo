@@ -1,7 +1,7 @@
 val root = project
   .in(file("."))
   .settings(
-    scalaVersion := "3.6.3",
+    scalaVersion := "3.8.3",
     organization := "dev.vgerasimov",
     name := "templo",
     version := "0.1.0",
@@ -16,8 +16,8 @@ val root = project
       Seq(
         "org.scalameta"  %% "munit"            % munitVersion % Test,
         "org.scalameta"  %% "munit-scalacheck" % munitVersion % Test,
-        "dev.vgerasimov" %% "slowparse"        % "0.1.2",
-        "dev.vgerasimov" %% "lizp"             % "0.1.0",
+        "dev.vgerasimov" %% "slowparse"        % "0.2.1",
+        "dev.vgerasimov" %% "lizp"             % "0.1.2",
       )
     },
   )

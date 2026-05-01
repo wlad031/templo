@@ -1,0 +1,26 @@
+{
+  "name": "{{project_name}} (Scala {{scala_version}} + sbt)",
+  "build": {
+    "dockerfile": "{{dockerfile_path}}",
+    "context": "{{build_context}}"
+  },
+  "remoteUser": "{{username}}",
+  "mounts": [
+    "source={{env_file_source}},target=/home/{{username}}/.env,type=bind,consistency=cached,readonly"
+  ],
+  "postCreateCommand": "bash ${containerWorkspaceFolder}/{{devcontainer_dir}}/post-create.sh",
+  "postStartCommand": "bash ${containerWorkspaceFolder}/{{devcontainer_dir}}/load-env.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "scala-lang.scala",
+        "scalameta.metals",
+        "EditorConfig.EditorConfig"
+      ],
+      "settings": {
+        "metals.sbtScript": "sbt",
+        "files.eol": "\n"
+      }
+    }
+  }
+}

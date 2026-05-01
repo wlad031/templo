@@ -5,15 +5,50 @@
 
 ## Syntax
 
-Syntax is pretty simple, code blocks are surrounded with curly brackets:
+Templo uses only `{{ ... }}` code blocks.
+
+- text outside code blocks is treated as string literals
+- code inside `{{ ... }}` is inserted as raw Lizp fragments
+- final template is compiled into a single `(concat ...)` expression and evaluated once
+
+Example:
 
 ```
-{{foo "hello" } 
-world that many times: { i } 
-{}}
+Hello {{name}}!
 ```
 
-This example will be translated into the following function call:
+Compiled Lizp:
+
 ```
-(foo "hello" "world that many times: " i)
+(concat "Hello " name "!")
 ```
+
+Cross-block continuation is supported:
+
+```
+{{(concat }} text {{ )}}
+```
+
+Compiled Lizp:
+
+```
+(concat (concat " text "))
+```
+
+## CLI
+
+Templo is a command-line renderer that accepts a template file, optional data file,
+and produces rendered output.
+
+```bash
+templo <template-file> [data-file] [output-file]
+```
+
+Or with flags:
+
+```bash
+templo --template <template-file> [--data <data-file>] [--out <output-file>]
+```
+
+If output file is omitted, Templo prints rendered text to stdout.
+If data file is provided, its Lizp code is prepended before template evaluation.

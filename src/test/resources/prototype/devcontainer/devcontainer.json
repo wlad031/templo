@@ -1,0 +1,18 @@
+{
+  "name": "templo-prototype",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "remoteUser": "vscode",
+  "initializeCommand": "bash .devcontainer/pre-start.sh",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "scala-lang.scala",
+        "scalameta.metals"
+      ]
+    }
+  }
+}
