@@ -1,5 +1,8 @@
-val root = project
+lazy val slowyaml4s = RootProject(file("../slowyaml4s"))
+
+lazy val root = project
   .in(file("."))
+  .dependsOn(slowyaml4s)
   .settings(
     scalaVersion := "3.8.3",
     organization := "dev.vgerasimov",
@@ -17,7 +20,7 @@ val root = project
         "org.scalameta"  %% "munit"            % munitVersion % Test,
         "org.scalameta"  %% "munit-scalacheck" % munitVersion % Test,
         "dev.vgerasimov" %% "slowparse"        % "0.2.1",
-        "dev.vgerasimov" %% "lizp"             % "0.1.4",
+        "dev.vgerasimov" %% "lizp"             % "0.1.4"
       )
     },
   )

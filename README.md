@@ -51,4 +51,24 @@ templo --template <template-file> [--data <data-file>] [--out <output-file>]
 ```
 
 If output file is omitted, Templo prints rendered text to stdout.
-If data file is provided, its Lizp code is prepended before template evaluation.
+If data file is provided:
+
+- `.lz` (or any non-YAML extension): treated as Lizp prelude code
+- `.yaml` / `.yml`: parsed as YAML object and exposed as template variables
+
+Nested YAML values are flattened with `_` in variable names, and arrays use index suffixes.
+Example: `project.team.name` -> `project_team_name`, `services[0]` -> `services_0`.
+
+YAML example:
+
+```yaml
+name: Alice
+enabled: true
+retries: 3
+```
+
+Template:
+
+```tmpl
+user={{name}}, enabled={{enabled}}, retries={{retries}}
+```

@@ -64,9 +64,16 @@ object Main:
   private def renderFromFiles(config: Config): Either[String, (Config, String)] =
     for
       template <- readFile(config.templatePath)
-      data <- config.dataPath.map(readFile).getOrElse(Right(""))
+      dataRaw <- config.dataPath.map(readFile).getOrElse(Right(""))
+      data <- config.dataPath match
+        case Some(path) if isYaml(path) => YamlPrelude.parseToPrelude(dataRaw)
+        case _                          => Right(dataRaw)
       output <- Templo.render(template, data).left.map(_.toString)
     yield (config, output)
+
+  private def isYaml(path: Path): Boolean =
+    val name = path.getFileName.toString.toLowerCase
+    name.endsWith(".yaml") || name.endsWith(".yml")
 
   private def writeOutput(result: (Config, String)): Either[String, Unit] =
     result match
@@ -102,5 +109,5 @@ object Main:
       |  templo --template <template-file> [--data <data-file>] [--out <output-file>]
       |
       |When output file is omitted, rendered text is printed to stdout.
-      |Data file should contain Lizp code prepended before template evaluation.
+      |Data file can be Lizp code or YAML object (for .yaml/.yml files).
       |""".stripMargin
