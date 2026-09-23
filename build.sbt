@@ -1,15 +1,21 @@
-lazy val slowyaml4s = RootProject(file("../slowyaml4s"))
+val giteaMaven = "https://gitea.local.vgerasimov.dev/api/packages/wlad031/maven"
+val artifactVersion = sys.env.getOrElse("VERSION", "0.1.1-SNAPSHOT")
+val giteaCredentials = for {
+  username <- sys.env.get("GITEA_USERNAME")
+  token <- sys.env.get("GITEA_TOKEN")
+} yield Credentials("Gitea API", "gitea.local.vgerasimov.dev", username, token)
 
 lazy val root = project
   .in(file("."))
-  .dependsOn(slowyaml4s)
   .settings(
     scalaVersion := "3.8.3",
     organization := "dev.vgerasimov",
     name := "templo",
-    version := "0.1.1",
-    githubOwner := "wlad031",
-    githubRepository := "templo",
+    version := artifactVersion,
+    resolvers += "gitea" at giteaMaven,
+    publishTo := Some("gitea" at giteaMaven),
+    publishMavenStyle := true,
+    credentials ++= giteaCredentials,
     scalacOptions ++= Seq(
       "-rewrite",
       "-source", "future"
