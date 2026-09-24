@@ -26,7 +26,7 @@ lazy val root = project
         "org.scalameta"  %% "munit"            % munitVersion % Test,
         "org.scalameta"  %% "munit-scalacheck" % munitVersion % Test,
         "dev.vgerasimov" %% "slowparse"        % "0.2.1",
-        "dev.vgerasimov" %% "slowyaml4s"       % "0.1.0",
+        "dev.vgerasimov" %% "slowyaml4s"       % "0.1.1",
         "dev.vgerasimov" %% "lizp"             % "0.1.5"
       )
     },
