@@ -14,10 +14,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: sbt/setup-sbt@v1
       - name: Publish tagged artifact
         env:
-          GITEA_USERNAME: wlad031
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          GITEA_USERNAME: ${{ secrets.PACKAGE_USERNAME }}
+          GITEA_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
         run: |
           VERSION="${{ gitea.ref_name }}"
           VERSION="${VERSION#v}"
