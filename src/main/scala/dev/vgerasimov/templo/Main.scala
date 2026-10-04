@@ -7,19 +7,19 @@ import scala.util.Try
 
 object Main:
   private case class Config(
-      templatePath: Path,
-      dataPath: Option[Path],
-      outputPath: Option[Path]
+    templatePath: Path,
+    dataPath: Option[Path],
+    outputPath: Option[Path]
   )
 
   def main(args: Array[String]): Unit =
-    if args.toList == List("--help") || args.isEmpty then
-      println(help)
-    else run(args.toList) match
-      case Left(error) =>
-        System.err.println(error)
-        System.exit(1)
-      case Right(()) => ()
+    if args.toList == List("--help") || args.isEmpty then println(help)
+    else
+      run(args.toList) match
+        case Left(error) =>
+          System.err.println(error)
+          System.exit(1)
+        case Right(()) => ()
 
   private def run(args: List[String]): Either[String, Unit] =
     parseArgs(args)
@@ -40,16 +40,16 @@ object Main:
 
   private def parseFlaggedArgs(args: List[String]): Either[String, Config] =
     def loop(
-        rest: List[String],
-        template: Option[Path],
-        data: Option[Path],
-        output: Option[Path]
+      rest: List[String],
+      template: Option[Path],
+      data: Option[Path],
+      output: Option[Path]
     ): Either[String, Config] =
       rest match
         case Nil =>
           template match
             case Some(path) => Right(Config(path, data, output))
-            case None => Left("Missing --template argument\n\n" + help)
+            case None       => Left("Missing --template argument\n\n" + help)
         case "--template" :: value :: tail =>
           loop(tail, Some(Path.of(value)), data, output)
         case "--data" :: value :: tail =>
@@ -64,7 +64,7 @@ object Main:
   private def renderFromFiles(config: Config): Either[String, (Config, String)] =
     for
       template <- readFile(config.templatePath)
-      dataRaw <- config.dataPath.map(readFile).getOrElse(Right(""))
+      dataRaw  <- config.dataPath.map(readFile).getOrElse(Right(""))
       data <- config.dataPath match
         case Some(path) if isYaml(path) => YamlPrelude.parseToPrelude(dataRaw)
         case _                          => Right(dataRaw)
@@ -81,10 +81,10 @@ object Main:
         config.outputPath match
           case Some(path) =>
             Try {
-                val parent = path.getParent
-                if parent != null then Files.createDirectories(parent)
-                Files.writeString(path, output)
-              }
+              val parent = path.getParent
+              if parent != null then Files.createDirectories(parent)
+              Files.writeString(path, output)
+            }
               .map(_ => ())
               .toEither
               .left
@@ -95,10 +95,8 @@ object Main:
 
   private def readFile(path: Path): Either[String, String] =
     Try {
-        Using.resource(scala.io.Source.fromFile(path.toFile))(_.mkString)
-      }
-      .toEither
-      .left
+      Using.resource(scala.io.Source.fromFile(path.toFile))(_.mkString)
+    }.toEither.left
       .map(err => s"Cannot read file '$path': ${err.getMessage}")
 
   private val help =

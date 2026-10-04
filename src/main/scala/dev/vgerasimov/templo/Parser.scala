@@ -30,12 +30,12 @@ object SlowparseParser extends Parser:
 
   override def apply(string: String): Either[Parser.Error, List[Block]] =
     blocks(string) match
-      case POut.Success(parsed, _, remaining, _) if remaining.isEmpty =>
+      case POut.Success(parsed, _, remaining, _) if remaining == "" =>
         mergeTextBlocks(parsed).asRight
-      case POut.Success(_, _, remaining, _) if remaining.startsWith("{{") =>
-        Parser.Error("Unclosed template expression").asLeft
       case POut.Success(_, _, remaining, _) =>
-        Parser.Error(s"Could not parse template near: ${preview(remaining)}").asLeft
+        P("{{")(remaining) match
+          case POut.Success(_, _, _, _) => Parser.Error("Unclosed template expression").asLeft
+          case POut.Failure(_, _)       => Parser.Error(s"Could not parse template near: ${preview(remaining)}").asLeft
       case POut.Failure(message, _) =>
         Parser.Error(message).asLeft
 
@@ -44,7 +44,7 @@ object SlowparseParser extends Parser:
       .foldLeft(List.empty[Block]) { (acc, block) =>
         (acc, block) match
           case (Block.Text(prev) :: tail, Block.Text(current)) => Block.Text(s"$prev$current") :: tail
-          case _                                                => block :: acc
+          case _                                               => block :: acc
       }
       .reverse
 

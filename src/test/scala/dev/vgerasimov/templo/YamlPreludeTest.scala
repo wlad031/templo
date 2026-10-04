@@ -18,6 +18,34 @@ class YamlPreludeTest extends munit.FunSuite:
     assertEquals(rendered, Right("Alice/true/3/2.5/"))
   }
 
+  test("yaml prelude accepts comments and document markers") {
+    val yaml =
+      """---
+        |# a document comment
+        |name: "Alice" # inline comment
+        |enabled: true
+        |...
+        |""".stripMargin
+
+    val prelude = YamlPrelude.parseToPrelude(yaml)
+    assertEquals(Templo.render("{{name}}/{{enabled}}", prelude.toOption.get), Right("Alice/true"))
+  }
+
+  test("yaml prelude supports flow collections and block scalars") {
+    val yaml =
+      """service: { name: Templo, ports: [8080, 8443] }
+        |summary: |
+        |  first line
+        |  second line
+        |""".stripMargin
+    val prelude = YamlPrelude.parseToPrelude(yaml)
+    assert(prelude.isRight)
+
+    val rendered =
+      Templo.render("{{service_name}}/{{service_ports_0}}/{{service_ports_1}}/{{summary}}", prelude.toOption.get)
+    assertEquals(rendered, Right("Templo/8080/8443/first line\nsecond line"))
+  }
+
   test("yaml prelude rejects non-object top-level values") {
     val yaml = "- one\n- two\n"
     val prelude = YamlPrelude.parseToPrelude(yaml)
