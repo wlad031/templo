@@ -65,6 +65,8 @@ object YamlPrelude:
     value.toVector.flatMap {
       case '\\' => Vector('\\', '\\')
       case '"'  => Vector('\\', '"')
+      case '\b' => Vector('\\', 'b')
+      case '\f' => Vector('\\', 'f')
       case '\r' => Vector('\\', 'r')
       case '\n' => Vector('\\', 'n')
       case '\t' => Vector('\\', 't')
@@ -180,7 +182,7 @@ object YamlPrelude:
       else if chars.headOption.contains('[') then flowArray(chars)
       else if chars.headOption.contains('"') then quoted(chars, '"').map(TextValue.apply)
       else if chars.headOption.contains('\'') then quoted(chars, '\'').map(TextValue.apply)
-      else if isNumber(chars) then Right(NumberValue(chars.mkString))
+      else if isNumber(chars) then Right(NumberValue(renderNumber(chars)))
       else Right(TextValue(chars.mkString))
 
     private def parseBlockScalar(style: Char, parentIndent: Int): Either[String, Value] =
@@ -300,10 +302,13 @@ object YamlPrelude:
             if body(i) == '\\' then
               if i + 1 >= body.size then return Left("unterminated escape sequence")
               body(i + 1) match
+                case 'b'   => output += '\b'
+                case 'f'   => output += '\f'
                 case 'n'   => output += '\n'
                 case 'r'   => output += '\r'
                 case 't'   => output += '\t'
                 case '"'   => output += '"'
+                case '/'   => output += '/'
                 case '\\'  => output += '\\'
                 case other => output += other
               i += 2
@@ -312,18 +317,63 @@ object YamlPrelude:
               i += 1
           Right(output.result().mkString)
 
+    private def renderNumber(chars: Vector[Char]): String =
+      var index = 0
+      val negative = chars.headOption.contains('-')
+      if negative || chars.headOption.contains('+') then index += 1
+      val integralStart = index
+      while index < chars.size && isDigit(chars(index)) do index += 1
+      val integral = chars.slice(integralStart, index)
+      val fraction =
+        if index < chars.size && chars(index) == '.' then
+          index += 1
+          val start = index
+          while index < chars.size && isDigit(chars(index)) do index += 1
+          chars.slice(start, index)
+        else Vector.empty
+      val exponent =
+        if index < chars.size && (chars(index) == 'e' || chars(index) == 'E') then
+          index += 1
+          val exponentNegative = index < chars.size && chars(index) == '-'
+          if exponentNegative || (index < chars.size && chars(index) == '+') then index += 1
+          val start = index
+          while index < chars.size && isDigit(chars(index)) do index += 1
+          val magnitude = chars.slice(start, index).foldLeft(0)((value, digit) => value * 10 + (digit - '0'))
+          if exponentNegative then -magnitude else magnitude
+        else 0
+      val digits = integral ++ fraction
+      val magnitude = digits.foldLeft(BigInt(0))((value, digit) => value * 10 + (digit - '0'))
+      val renderedDigits = magnitude.toString.toVector
+      val scale = fraction.size - exponent
+      val unsigned =
+        if scale <= 0 then renderedDigits ++ Vector.fill(-scale)('0')
+        else if renderedDigits.size > scale then
+          renderedDigits.take(renderedDigits.size - scale) ++ Vector('.') ++ renderedDigits.drop(
+            renderedDigits.size - scale
+          )
+        else Vector('0', '.') ++ Vector.fill(scale - renderedDigits.size)('0') ++ renderedDigits
+      (if negative then Vector('-') else Vector.empty).concat(unsigned).mkString
+
     private def isNumber(chars: Vector[Char]): Boolean =
       var index = 0
       if chars.headOption.contains('-') || chars.headOption.contains('+') then index += 1
       val digitsStart = index
       while index < chars.size && isDigit(chars(index)) do index += 1
       val integral = index > digitsStart
-      if index < chars.size && chars(index) == '.' then
+      val decimal =
+        if index < chars.size && chars(index) == '.' then
+          index += 1
+          val fractionStart = index
+          while index < chars.size && isDigit(chars(index)) do index += 1
+          integral && index > fractionStart
+        else integral
+      if decimal && index < chars.size && (chars(index) == 'e' || chars(index) == 'E') then
         index += 1
-        val fractionStart = index
+        if index < chars.size && (chars(index) == '+' || chars(index) == '-') then index += 1
+        val exponentStart = index
         while index < chars.size && isDigit(chars(index)) do index += 1
-        integral && index > fractionStart && index == chars.size
-      else integral && index == chars.size
+        index > exponentStart && index == chars.size
+      else decimal && index == chars.size
 
     private def isDigit(char: Char): Boolean = char >= '0' && char <= '9'
 

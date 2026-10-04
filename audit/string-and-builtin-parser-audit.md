@@ -43,7 +43,11 @@ The candidate-line counts are deliberately not violation counts. Manual classifi
 
 - **Slowparse:** `parser.scala` represents input as a `Vector[Char]` cursor and exposes `anyCharValue`; public `String` input/result materialization remains documented at the `P` API boundary. `charRange` no longer reconstructs character tokens through `String` capture and reparsing.
 - **Lizp:** `parser.scala` receives character tokens through `anyCharValue`, parses booleans with grammar branches, folds digits into numeric state, and materializes only typed symbol/string values. `config.scala`, `interpreter.scala`, and `types.scala` no longer normalize or slice String tokens. `repl.scala` uses `ArrayBuffer[Char]` until its input boundary.
-- **Templo:** `Parser.scala` uses combinators for template delimiters and diagnostic previews. `YamlPrelude.scala` first captures public YAML input as character values through Slowparse, then uses a project-owned `Vector[Char]` grammar and typed YAML `Value` AST. Its tested subset includes mappings, block/flow sequences and mappings, quoted scalars, comments, document markers, and literal/folded block scalars; it does not claim arbitrary YAML compatibility. `slowyaml4s` was removed from `build.sbt`.
+- **Templo:** `Parser.scala` uses combinators for template delimiters and diagnostic previews. `YamlPrelude.scala` first captures public YAML input as character values through Slowparse, then uses a project-owned `Vector[Char]` grammar and typed YAML `Value` AST. `slowyaml4s` was removed from `build.sbt`.
+
+### YAML compatibility rationale
+
+`slowyaml4s` was an implementation dependency, not a public Templo API: Templo exposed only the YAML-to-Lizp-prelude path, which accepts an object root and flattens scalar descendants for templates. The replacement preserves that prelude-visible contract for null/boolean/decimal (including exponent) scalars, quoted escapes, nested/block and flow mappings/sequences, comments, and document markers. Regression tests exercise these forms plus literal and folded scalar rendering. YAML tags, anchors, aliases, and multi-document streams were not part of Templo's public prelude contract and remain intentionally unsupported rather than silently delegated to a String-driven parser.
 
 ## Production-file inventory and classification
 
@@ -87,9 +91,9 @@ All gates ran in the `templo-runner:latest` devcontainer with bounded 240-second
 |---|---|---|
 | Slowparse | `sbt scalafmt Compile/scalafmtCheck test` | Production formatting check passed; 48 tests passed. |
 | Lizp | `sbt scalafmt Compile/scalafmtCheck test` | Production formatting check passed; 59 tests passed using Slowparse `0.2.9`. |
-| Templo | `sbt scalafmtAll scalafmtCheckAll test` | Formatting checks passed; 46 tests passed. |
+| Templo | `sbt scalafmtAll scalafmtCheckAll test` | Formatting checks passed; 47 tests passed. |
 
-Regression coverage includes Slowparse parser conversion boundaries, Lizp parser token conversion, Templo template parsing and generated source paths, filename normalization, YAML comments/document markers, flow collections, block scalars, nesting, arrays, scalar conversion, and rejection of non-object roots.
+Regression coverage includes Slowparse parser conversion boundaries, Lizp parser token conversion, Templo template parsing and generated source paths, filename normalization, YAML comments/document markers, flow collections, literal/folded block scalars, nesting, arrays, exponent/escape scalar conversion, and rejection of non-object roots.
 
 ## Verdict
 

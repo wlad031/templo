@@ -52,6 +52,13 @@ class YamlPreludeTest extends munit.FunSuite:
     assertEquals(rendered, Right("Templo/8080/8443/first line\nsecond line/folded first folded second"))
   }
 
+  test("yaml prelude preserves compatible scalar syntax") {
+    val yaml = "ratio: 6.02e2\nescaped: \"a\\tb\\/c\"\n"
+    val prelude = YamlPrelude.parseToPrelude(yaml)
+    assert(prelude.isRight)
+    assertEquals(Templo.render("{{ratio}}/{{escaped}}", prelude.toOption.get), Right("602/a\tb/c"))
+  }
+
   test("yaml prelude rejects non-object top-level values") {
     val yaml = "- one\n- two\n"
     val prelude = YamlPrelude.parseToPrelude(yaml)
