@@ -33,6 +33,23 @@ class CliYamlIntegrationTest extends munit.FunSuite:
     assertEquals(printed, "user=Alice, enabled=true, retries=3, ratio=2.5, note=ok\n")
   }
 
+  test("cli recognizes case-insensitive YAML extensions") {
+    val tempDir = Files.createTempDirectory("templo-yaml-extension-it-")
+    val templatePath = tempDir.resolve("template.tmpl")
+    val yamlPath = tempDir.resolve("vars.YAML")
+
+    Files.writeString(templatePath, "{{name}}")
+    Files.writeString(yamlPath, "name: Alice\n")
+
+    val renderedOut = ByteArrayOutputStream()
+    val printed = Console.withOut(PrintStream(renderedOut)) {
+      Main.main(Array(templatePath.toString, yamlPath.toString))
+      renderedOut.toString(StandardCharsets.UTF_8)
+    }
+
+    assertEquals(printed, "Alice\n")
+  }
+
   test("cli renders template using nested yaml vars and arrays") {
     val tempDir = Files.createTempDirectory("templo-yaml-it-nested-")
     val templatePath = tempDir.resolve("template-nested.tmpl")

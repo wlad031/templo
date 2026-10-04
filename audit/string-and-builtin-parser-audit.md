@@ -35,7 +35,7 @@ rg -n --glob '*.scala' \
 |---|---:|---:|---|
 | Slowparse | 1 | 54 | `Vector`/`Set` cursor operations; documented public input/result adapters; parser diagnostics. |
 | Lizp | 9 | 68 | Typed AST/text materialization, path/resource boundaries, structural collections, and project parser invocation. |
-| Templo | 7 | 118 | Typed YAML/Lizp values, structural `Vector[Char]` grammar operations, generated Lizp source, and path boundaries. |
+| Templo | 7 | 141 | Typed YAML/Lizp values, structural `Vector[Char]` grammar operations, generated Lizp source, and path boundaries. |
 
 The candidate-line counts are deliberately not violation counts. Manual classification of every production file below leaves **zero unapproved findings**.
 
@@ -91,9 +91,9 @@ All gates ran in the `templo-runner:latest` devcontainer with bounded 240-second
 |---|---|---|
 | Slowparse | `sbt scalafmt Compile/scalafmtCheck test` | Production formatting check passed; 48 tests passed. |
 | Lizp | `sbt scalafmt Compile/scalafmtCheck test` | Production formatting check passed; 59 tests passed using Slowparse `0.2.9`. |
-| Templo | `sbt scalafmtAll scalafmtCheckAll test` | Formatting checks passed; 47 tests passed. |
+| Templo | `sbt scalafmtAll scalafmtCheckAll test` | Formatting checks passed; 48 tests passed. |
 
-Regression coverage includes Slowparse parser conversion boundaries, Lizp parser token conversion, Templo template parsing and generated source paths, filename normalization, YAML comments/document markers, flow collections, literal/folded block scalars, nesting, arrays, exponent/escape scalar conversion, and rejection of non-object roots.
+Regression coverage includes Slowparse parser conversion boundaries, Lizp parser token conversion, Templo template parsing and generated source paths, case-insensitive filename normalization, YAML comments/document markers, flow collections, literal/folded block scalars, nesting, arrays, exponent/escape scalar conversion, and rejection of non-object roots.
 
 ## Verdict
 
