@@ -37,13 +37,19 @@ class YamlPreludeTest extends munit.FunSuite:
         |summary: |
         |  first line
         |  second line
+        |folded: >
+        |  folded first
+        |  folded second
         |""".stripMargin
     val prelude = YamlPrelude.parseToPrelude(yaml)
     assert(prelude.isRight)
 
     val rendered =
-      Templo.render("{{service_name}}/{{service_ports_0}}/{{service_ports_1}}/{{summary}}", prelude.toOption.get)
-    assertEquals(rendered, Right("Templo/8080/8443/first line\nsecond line"))
+      Templo.render(
+        "{{service_name}}/{{service_ports_0}}/{{service_ports_1}}/{{summary}}/{{folded}}",
+        prelude.toOption.get
+      )
+    assertEquals(rendered, Right("Templo/8080/8443/first line\nsecond line/folded first folded second"))
   }
 
   test("yaml prelude rejects non-object top-level values") {
