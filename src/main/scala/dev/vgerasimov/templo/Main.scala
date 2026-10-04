@@ -22,9 +22,33 @@ object Main:
         case Right(()) => ()
 
   private def run(args: List[String]): Either[String, Unit] =
-    parseArgs(args)
-      .flatMap(renderFromFiles)
-      .flatMap(writeOutput)
+    args match
+      case "build" :: tail => parseBuildArgs(tail).flatMap(SiteBuilder.build)
+      case _ =>
+        parseArgs(args)
+          .flatMap(renderFromFiles)
+          .flatMap(writeOutput)
+
+  private def parseBuildArgs(args: List[String]): Either[String, SiteBuilder.Config] =
+    def loop(
+      rest: List[String],
+      source: Option[Path],
+      output: Option[Path],
+      data: Option[Path],
+      force: Boolean
+    ): Either[String, SiteBuilder.Config] =
+      rest match
+        case Nil =>
+          (source, output) match
+            case (Some(sourcePath), Some(outputPath)) => Right(SiteBuilder.Config(sourcePath, outputPath, data, force))
+            case _ => Left("Site build requires --source and --out arguments\n\n" + help)
+        case "--source" :: value :: tail => loop(tail, Some(Path.of(value)), output, data, force)
+        case "--out" :: value :: tail    => loop(tail, source, Some(Path.of(value)), data, force)
+        case "--data" :: value :: tail   => loop(tail, source, output, Some(Path.of(value)), force)
+        case "--force" :: tail           => loop(tail, source, output, data, true)
+        case unknown :: _                => Left(s"Unknown site build argument: $unknown\n\n$help")
+
+    loop(args, None, None, None, false)
 
   private def parseArgs(args: List[String]): Either[String, Config] =
     args match
@@ -105,7 +129,9 @@ object Main:
       |Usage:
       |  templo <template-file> [data-file] [output-file]
       |  templo --template <template-file> [--data <data-file>] [--out <output-file>]
+      |  templo build --source <directory> --out <directory> [--data <data-file>] [--force]
       |
       |When output file is omitted, rendered text is printed to stdout.
+      |Site builds render `.tmpl` files, copy other files unchanged, and stage output before replacement.
       |Data file can be Lizp code or YAML object (for .yaml/.yml files).
       |""".stripMargin

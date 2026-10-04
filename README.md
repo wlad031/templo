@@ -56,6 +56,18 @@ If data file is provided:
 - `.lz` (or any non-YAML extension): treated as Lizp prelude code
 - `.yaml` / `.yml`: parsed as YAML object and exposed as template variables
 
+## Site builds
+
+Templo can build a static output tree from a source directory:
+
+```bash
+templo build --source site --out public --data site.yaml --force
+```
+
+Files ending in `.tmpl` are rendered and written without that suffix; every other source file is copied unchanged. The build stages all output beside `public` and installs it only after rendering succeeds. Existing output requires `--force`; output inside source is rejected.
+
+`devcontainers-templo` can keep its devcontainer-specific schema, templates, image build, and validation downstream while delegating generic tree rendering and atomic output installation to this command.
+
 Nested YAML values are flattened with `_` in variable names, and arrays use index suffixes.
 Example: `project.team.name` -> `project_team_name`, `services[0]` -> `services_0`.
 
