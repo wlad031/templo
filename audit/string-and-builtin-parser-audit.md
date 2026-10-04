@@ -15,9 +15,9 @@ All parser state is structural: parser combinators, spans, character vectors, or
 
 The audit was performed against these remediation revisions:
 
-- Slowparse: `b35785d29791b1fad753a7673122b0c6a3c0bb59`
+- Slowparse: `b3b6ec4`
 - Lizp: `bb001b1`
-- Templo: `cbb7110`
+- Templo: `efceb29`
 
 Slowparse `0.2.9`, containing `anyCharValue`, was built, tested, and published directly to the Gitea Maven registry. Lizp now consumes that additive release.
 
