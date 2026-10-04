@@ -17,7 +17,7 @@ The audit was performed against these remediation revisions:
 
 - Slowparse: `b35785d29791b1fad753a7673122b0c6a3c0bb59`
 - Lizp: `bb001b1`
-- Templo: `1e6600b`
+- Templo: `cbb7110`
 
 Slowparse `0.2.9`, containing `anyCharValue`, was built, tested, and published directly to the Gitea Maven registry. Lizp now consumes that additive release.
 
