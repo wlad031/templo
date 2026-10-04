@@ -43,7 +43,7 @@ The candidate-line counts are deliberately not violation counts. Manual classifi
 
 - **Slowparse:** `parser.scala` represents input as a `Vector[Char]` cursor and exposes `anyCharValue`; public `String` input/result materialization remains documented at the `P` API boundary. `charRange` no longer reconstructs character tokens through `String` capture and reparsing.
 - **Lizp:** `parser.scala` receives character tokens through `anyCharValue`, parses booleans with grammar branches, folds digits into numeric state, and materializes only typed symbol/string values. `config.scala`, `interpreter.scala`, and `types.scala` no longer normalize or slice String tokens. `repl.scala` uses `ArrayBuffer[Char]` until its input boundary.
-- **Templo:** `Parser.scala` uses combinators for template delimiters. `YamlPrelude.scala` replaces `slowyaml4s` with a project-owned `Vector[Char]` grammar and typed YAML `Value` AST, including mappings, block/flow sequences and mappings, quoted scalars, comments, document markers, and literal/folded block scalars. `slowyaml4s` was removed from `build.sbt`.
+- **Templo:** `Parser.scala` uses combinators for template delimiters and diagnostic previews. `YamlPrelude.scala` first captures public YAML input as character values through Slowparse, then uses a project-owned `Vector[Char]` grammar and typed YAML `Value` AST. Its tested subset includes mappings, block/flow sequences and mappings, quoted scalars, comments, document markers, and literal/folded block scalars; it does not claim arbitrary YAML compatibility. `slowyaml4s` was removed from `build.sbt`.
 
 ## Production-file inventory and classification
 
@@ -74,10 +74,10 @@ The candidate-line counts are deliberately not violation counts. Manual classifi
 | `src/main/scala/dev/vgerasimov/templo/common.scala` | Compliant | No prohibited token/String handling. |
 | `src/main/scala/dev/vgerasimov/templo/Interpreter.scala` | Approved | Generated Lizp-source assembly. |
 | `src/main/scala/dev/vgerasimov/templo/Main.scala` | Approved | CLI path/file-name normalization, file decoding, and output boundaries. |
-| `src/main/scala/dev/vgerasimov/templo/Parser.scala` | Compliant | Combinators construct typed template blocks; diagnostics are public text. |
+| `src/main/scala/dev/vgerasimov/templo/Parser.scala` | Compliant | Combinators construct typed template blocks and diagnostic previews; diagnostics are public text. |
 | `src/main/scala/dev/vgerasimov/templo/Templo.scala` | Compliant | No prohibited token/String handling. |
 | `src/main/scala/dev/vgerasimov/templo/types.scala` | Compliant | No prohibited token/String handling. |
-| `src/main/scala/dev/vgerasimov/templo/YamlPrelude.scala` | Compliant | Character-vector cursor, typed YAML AST, structural escaping; materialization only for typed scalar/key values and generated Lizp prelude text. |
+| `src/main/scala/dev/vgerasimov/templo/YamlPrelude.scala` | Compliant | Slowparse character-value boundary, character-vector cursor, typed YAML AST, structural escaping; materialization only for typed scalar/key values and generated Lizp prelude text. |
 
 ## Verification
 

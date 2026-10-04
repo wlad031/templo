@@ -25,7 +25,7 @@ lazy val root = project
       Seq(
         "org.scalameta"  %% "munit"            % munitVersion % Test,
         "org.scalameta"  %% "munit-scalacheck" % munitVersion % Test,
-        "dev.vgerasimov" %% "slowparse"        % "0.2.1",
+        "dev.vgerasimov" %% "slowparse"        % "0.2.9",
         "dev.vgerasimov" %% "lizp"             % "0.1.5"
       )
     },

@@ -1,5 +1,8 @@
 package dev.vgerasimov.templo
 
+import dev.vgerasimov.slowparse.*
+import dev.vgerasimov.slowparse.Parsers.{ *, given }
+
 /** Minimal, project-owned YAML subset parser used by the CLI prelude.
   *
   * It deliberately keeps source as a character vector and parses indentation, mappings, sequences, and scalar grammar
@@ -14,11 +17,16 @@ object YamlPrelude:
   private case class ObjectValue(values: Vector[(String, Value)]) extends Value
   private case class ArrayValue(values: Vector[Value]) extends Value
 
+  private val sourceCharacters: P[List[Char]] = anyCharValue.rep()
+
   def parseToPrelude(yaml: String): Either[String, String] =
-    Document(yaml.toVector).parse() match
-      case Left(message)            => Left(s"Cannot parse YAML data: $message")
-      case Right(root: ObjectValue) => toPrelude(root)
-      case Right(_)                 => Left("YAML data must be an object at the top level")
+    sourceCharacters(yaml) match
+      case POut.Success(characters, _, _, _) =>
+        Document(Vector.from(characters)).parse() match
+          case Left(message)            => Left(s"Cannot parse YAML data: $message")
+          case Right(root: ObjectValue) => toPrelude(root)
+          case Right(_)                 => Left("YAML data must be an object at the top level")
+      case POut.Failure(message, _) => Left(s"Cannot read YAML data: $message")
 
   private def toPrelude(value: ObjectValue): Either[String, String] =
     val rendered = flatten(value).sortBy(_._1).map { case (name, yamlValue) =>

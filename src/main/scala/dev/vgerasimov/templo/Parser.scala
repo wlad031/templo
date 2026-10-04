@@ -48,6 +48,10 @@ object SlowparseParser extends Parser:
       }
       .reverse
 
+  private val previewParser: P[String] = anyChar.rep(0, 30).!
+
   private def preview(value: String): String =
-    val size = 30
-    if value.length <= size then value else s"${value.take(size)}..."
+    previewParser(value) match
+      case POut.Success(captured, _, remaining, _) =>
+        if remaining == "" then captured else s"$captured..."
+      case POut.Failure(_, _) => ""
